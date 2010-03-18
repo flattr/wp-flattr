@@ -47,11 +47,11 @@ function flattr_settings_page()
 			<table class="form-table">
 				<tr valign="top">
 					<th scope="row">Your Flattr user ID</th>
-					<td><input name="flattr-uid" type="text" value="<?php echo(get_option('flattr_uid')); ?>" /></td>
+					<td><input name="flattr_uid" type="text" value="<?php echo(get_option('flattr_uid')); ?>" /></td>
 				</tr>
 				<tr valign="top">
 					<th scope="row">The category for your posts</th>
-					<td><input type="text" name="flattr-cat" value="<?php echo get_option('flattr_cat'); ?>" /> (choose between text, images, audio, video, software, rest)</td>
+					<td><input type="text" name="flattr_cat" value="<?php echo get_option('flattr_cat'); ?>" /> (choose between text, images, audio, video, software, rest)</td>
 				</tr>
 			</table>
 			<p class="submit">
@@ -79,8 +79,8 @@ function get_the_flattr_permalink()
 {
 	$output = "<script type=\"text/javascript\">\n";
 	$output .= "var flattr_wp_ver = '" . FLATTR_WP_VERSION . "';\n";
-	$output .= "var flattr_uid = '" . flattr_safe_output(get_option('flattr-uid'))                  . "';\n";
-	$output .= "var flattr_cat = '" . flattr_safe_output(get_option('flattr-cat'))                  . "';\n";
+	$output .= "var flattr_uid = '" . flattr_safe_output(get_option('flattr_uid'))                  . "';\n";
+	$output .= "var flattr_cat = '" . flattr_safe_output(get_option('flattr_cat'))                  . "';\n";
 	$output .= "var flattr_tle = '" . flattr_safe_output(get_the_title())                           . "';\n";
 	$output .= "var flattr_dsc = '" . flattr_safe_output(get_the_excerpt())                         . "';\n";
 	$output .= "var flattr_tag = '" . flattr_safe_output(strip_tags(get_the_tag_list('', ',', ''))) . "';\n";
