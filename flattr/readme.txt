@@ -11,12 +11,13 @@ This plugin allows you to easily add a Flattr button to your wordpress blog.
 2. Go to the WordPress control panel and find the 'Plugins' section
 3. Activate the plugin 'Flattr'
 4. Go to the 'Options' section and select 'Flattr'
-5. Add your default category (which usually would be 'text' if you have a normal blog), and your Flattr user ID (your user ID can be found on your dashboard on http://flattr.com/)
-6. Add the following code snippet within 'the loop' in index.php or single.php for your theme:
+5. Enter your default category (which usually would be 'text' if you have a normal blog), and your Flattr user ID (your user ID can be found on your dashboard on http://flattr.com/)
+6. If you want the Flattr button to be automagically included at the end of your posts, leave the checkbox checked
+7. If you want to add the Flattr button manually in your theme, uncheck the checkbox and use the following code snippet:
 
 <?php the_flattr_permalink(); ?>
 
-7. PROFIT!!
+8. PROFIT!!
 
 
 == Support ==
