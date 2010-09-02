@@ -11,7 +11,7 @@ License: This code is (un)licensed under the kopimi (copyme) non-license; http:/
 
 class Flattr
 {
-	const VERSION = '0.9.13';
+	const VERSION = '0.9.14';
 	const WP_MIN_VER = '2.9';
 	const PHP_MIN_VER = '5.0.0';
 	const API_SCRIPT  = 'https://api.flattr.com/js/0.5.0/load.js?mode=auto';

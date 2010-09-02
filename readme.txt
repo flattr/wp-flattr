@@ -35,6 +35,10 @@ Note that we only support PHP 5 and WordPress 2.9 or above.
 
 == Changelog ==
 
+= 0.9.14 =
+Made it easier to connect with a Flattr account.
+Now possible to put the Flattr button before the content in posts.
+
 = 0.9.13 =
 Escaping of quotation marks in tags and title. Tags are now stripped from titles.
 
