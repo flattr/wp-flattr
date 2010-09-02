@@ -117,6 +117,11 @@ class Flattr
 			return '';
 		}
 
+		$flattr_uid = get_option('flattr_uid');
+		if (!$flattr_uid) {
+			return '';
+		}
+
 		$selectedLanguage = get_post_meta($post->ID, '_flattr_post_language', true);
 		if (empty($selectedLanguage))
 		{
@@ -137,7 +142,7 @@ class Flattr
 
 		$buttonData = array(
 
-			'user_id'	=> get_option('flattr_uid'),
+			'user_id'	=> $flattr_uid,
 			'url'		=> get_permalink(),
 			'compact'	=> ( get_option('flattr_compact', false) ? true : false ),
 			'hide'		=> $hidden,

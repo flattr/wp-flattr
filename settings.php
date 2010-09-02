@@ -4,7 +4,7 @@ class Flattr_Settings
 {
     public function __construct()
     {
-        add_action('admin_init',    array($this, 'register_settings') );
+        add_action('admin_init',    array( $this, 'register_settings') );
         add_action('admin_menu',    array( $this, 'init_ui') );
     }
 
@@ -15,47 +15,62 @@ class Flattr_Settings
 
     public function register_settings()
     {
-		register_setting('flattr-settings-group', 'flattr_uid', 	array($this, 'validate_userid'));
-		register_setting('flattr-settings-group', 'flattr_aut',		array($this, 'validate_auto'));
-		register_setting('flattr-settings-group', 'flattr_aut_page',		array($this, 'validate_auto_page'));
-		register_setting('flattr-settings-group', 'flattr_cat', 	array($this, 'validate_category'));
-		register_setting('flattr-settings-group', 'flattr_lng',		array($this, 'validate_language'));
-		register_setting('flattr-settings-group', 'flattr_compact', array($this, 'validate_checkbox'));
-		register_setting('flattr-settings-group', 'flattr_hide',	array($this, 'validate_checkbox'));
+        register_setting('flattr-settings-uid-group', 'flattr_uid',     array($this, 'sanitize_userid'));
+        register_setting('flattr-settings-uid-group', 'flattr_username',array($this, 'sanitize_username'));
+        register_setting('flattr-settings-group', 'flattr_aut',         array($this, 'sanitize_auto'));
+        register_setting('flattr-settings-group', 'flattr_aut_page',    array($this, 'sanitize_auto_page'));
+        register_setting('flattr-settings-group', 'flattr_cat',         array($this, 'sanitize_category'));
+        register_setting('flattr-settings-group', 'flattr_lng',         array($this, 'sanitize_language'));
+        register_setting('flattr-settings-group', 'flattr_compact',     array($this, 'sanitize_checkbox'));
+        register_setting('flattr-settings-group', 'flattr_hide',        array($this, 'sanitize_checkbox'));
     }
 
     public function render()
     {
-        include('settings-template.php');
-    }
-    
-    public function validate_category($category)
-    {
-    	return $category;
-    }
-    
-    public function validate_language($language)
-    {
-    	return $language;
+        if (array_key_exists('FlattrId', $_GET)) {
+            include('settings-confirm-template.php');
+        }
+        else {
+            include('settings-template.php');
+        }
     }
 
-    public function validate_checkbox($input)
+    public function sanitize_category($category)
+    {
+        return $category;
+    }
+
+    public function sanitize_language($language)
+    {
+        return $language;
+    }
+
+    public function sanitize_checkbox($input)
     {
         return ($input == 'true' ? 'true' : '');
     }
-    
-    public function validate_auto($input)
+
+    public function sanitize_auto($input)
     {
         return ($input == 'on' ? 'on' : '');
     }
 
-    public function validate_auto_page($input)
+    public function sanitize_auto_page($input)
     {
         return ($input == 'on' ? 'on' : '');
     }
+
+    public function sanitize_userid($userId)
+    {
+        $userId = is_numeric($userId) ? intval($userId) : false;
+        return $userId;
+    }
     
-    public function validate_userid($userId)
-    {    
-    	return $userId;
+    public function sanitize_username($username)
+    {
+        if (preg_match('/[^A-Za-z0-9-_.]/', $username)) {
+            $username = false;
+        }
+        return $username;
     }
 }
