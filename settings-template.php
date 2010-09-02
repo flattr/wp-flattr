@@ -68,6 +68,11 @@
 				</tr>
 
 				<tr valign="top">
+					<th scope="row"><?php _e('Insert button before the content'); ?></th>
+					<td><input <?php if (get_option('flattr_top', 'false') == 'true') { echo(' checked="checked"'); } ?> type="checkbox" name="flattr_top" value="true" /></td>
+				</tr>
+
+				<tr valign="top">
 					<th scope="row"><?php _e('Use the compact button'); ?></th>
 					<td><input <?php if (get_option('flattr_compact', 'false') == 'true') { echo(' checked="checked"'); } ?> type="checkbox" name="flattr_compact" value="true" /></td>
 				</tr>

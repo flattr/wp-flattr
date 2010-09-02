@@ -295,7 +295,13 @@ class Flattr
 	
 	public function injectIntoTheContent($content)
 	{
-		return $content . $this->getButton();
+		if ( get_option('flattr_top', false) ) {
+			$result = $this->getButton() . $content;
+		}
+		else {
+			$result = $content . $this->getButton();
+		}
+		return $result;
 	}	
 }
 

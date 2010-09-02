@@ -23,6 +23,7 @@ class Flattr_Settings
         register_setting('flattr-settings-group', 'flattr_lng',         array($this, 'sanitize_language'));
         register_setting('flattr-settings-group', 'flattr_compact',     array($this, 'sanitize_checkbox'));
         register_setting('flattr-settings-group', 'flattr_hide',        array($this, 'sanitize_checkbox'));
+        register_setting('flattr-settings-group', 'flattr_top',         array($this, 'sanitize_checkbox'));
     }
 
     public function render()
