@@ -16,7 +16,6 @@ class Flattr_Settings
     public function register_settings()
     {
         register_setting('flattr-settings-uid-group', 'flattr_uid',     array($this, 'sanitize_userid'));
-        register_setting('flattr-settings-uid-group', 'flattr_username',array($this, 'sanitize_username'));
         register_setting('flattr-settings-group', 'flattr_aut',         array($this, 'sanitize_auto'));
         register_setting('flattr-settings-group', 'flattr_aut_page',    array($this, 'sanitize_auto_page'));
         register_setting('flattr-settings-group', 'flattr_cat',         array($this, 'sanitize_category'));
@@ -63,15 +62,12 @@ class Flattr_Settings
 
     public function sanitize_userid($userId)
     {
-        $userId = is_numeric($userId) ? intval($userId) : false;
-        return $userId;
-    }
-    
-    public function sanitize_username($username)
-    {
-        if (preg_match('/[^A-Za-z0-9-_.]/', $username)) {
-            $username = false;
+        if (preg_match('/[^A-Za-z0-9-_.]/', $userId)) {
+            $userId = false;
         }
-        return $username;
+        else if (is_numeric($userId)) {
+            $userId = intval($userId);
+        }
+        return $userId;
     }
 }

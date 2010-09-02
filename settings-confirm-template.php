@@ -8,13 +8,15 @@
 				<td>
 					<?php if (get_option('flattr_uid')) { ?>
 						<?php
-						if (get_option('flattr_username')) {
-							?><a href="<?php echo esc_url( 'https://flattr.com/profile/' . get_option('flattr_username') ); ?>"><?php
-							esc_html_e(get_option('flattr_username'));
+						if (preg_match('[A-Za-z-_.]', get_option('flattr_uid'))) {
+							?><a href="<?php echo esc_url( 'https://flattr.com/profile/' . get_option('flattr_uid') ); ?>"><?php
+							esc_html_e(get_option('flattr_uid'));
 							?></a> <?php
 						}
+						else {
+							esc_html_e(get_option('flattr_uid'));
+						}
 						?>
-						(User ID <?php esc_html_e(get_option('flattr_uid')); ?>)
 					<?php } else { ?>
 						-
 					<?php } ?>
@@ -24,7 +26,6 @@
 				<th scope="row"><?php _e('Your new Flattr connection'); ?></th>
 				<td>
 					<a href="<?php echo esc_url( 'https://flattr.com/profile/' . $_GET['FlattrUsername'] ); ?>"><?php esc_html_e($_GET['FlattrUsername']); ?></a>
-					(User ID <?php esc_html_e($_GET['FlattrId']); ?>)
 				</td>
 			</tr>
 		</table>
@@ -37,8 +38,7 @@
 				wp_nonce_field("flattr-settings-uid-group-options", '_wpnonce', false);
 				?>
 				<input type="hidden" value="<?php esc_attr_e(remove_query_arg(array('FlattrId', 'FlattrUsername'))); ?>" name="_wp_http_referer">
-				<input type="hidden" name="flattr_uid" value="<?php esc_attr_e($_GET['FlattrId']); ?>" />
-				<input type="hidden" name="flattr_username" value="<?php esc_attr_e($_GET['FlattrUsername']); ?>" />
+				<input type="hidden" name="flattr_uid" value="<?php esc_attr_e($_GET['FlattrUsername']); ?>" />
 				<input type="submit" class="button-primary" value="<?php _e('Accept') ?>" />
 			</p>
 		</form>

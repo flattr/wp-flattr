@@ -9,18 +9,20 @@
 					<?php
 					$connect_callback = rawurlencode( ($_SERVER['HTTPS'] ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 					if (get_option('flattr_uid')) { ?>
-						Connected with
+						Connected as
 							<?php
-							if (get_option('flattr_username')) {
-								?><a href="<?php echo esc_url( 'https://flattr.com/profile/' . get_option('flattr_username') ); ?>"><?php
-								esc_html_e(get_option('flattr_username'));
-								?></a><?php
+							if (preg_match('/[A-Za-z-_.]/', get_option('flattr_uid'))) {
+								?><a href="<?php echo esc_url( 'https://flattr.com/profile/' . get_option('flattr_uid') ); ?>"><?php
+								esc_html_e(get_option('flattr_uid'));
+								?></a>.<?php
+							}
+							else {
+								?>user id <?php esc_html_e(get_option('flattr_uid'));?>.<?php
 							}
 							?>
-						(User ID <?php esc_html_e(get_option('flattr_uid')); ?>).
 						(<a href="https://flattr.com/login?idCallback=<?php echo $connect_callback; ?>">Reconnect</a>)
 					<?php } else { ?>
-						<a href="https://flattr.com/login?idCallback=<?php echo $connect_callback; ?>">Connect with Flattr</a>
+						None - <a href="https://flattr.com/login?idCallback=<?php echo $connect_callback; ?>">Connect with Flattr</a>
 					<?php } ?>
 				</td>
 			</tr>
