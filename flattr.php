@@ -1,136 +1,315 @@
 <?php
 /*
 Plugin Name: Flattr
-Plugin URI: http://api.flattr.com/plugins/
+Plugin URI: http://flattr.com/
 Description: Give your readers the opportunity to Flattr your effort
-Version: 0.3
-Author: Flattr
+Version: 0.9.13
+Author: Flattr.com
 Author URI: http://flattr.com/
+License: This code is (un)licensed under the kopimi (copyme) non-license; http://www.kopimi.com. In other words you are free to copy it, taunt it, share it, fork it or whatever. :)
 */
 
-// Defines
-
-define(FLATTR_WP_VERSION, '0.3');
-define(FLATTR_WP_SCRIPT,  'http://flattr.com/api/flattr.js');
-
-
-// Init
-
-if (is_admin())
+class Flattr
 {
-	add_action('admin_menu', 'flattr_admin_menu');
-	add_action('admin_init', 'flattr_admin_init' );
+	const VERSION = '0.9.13';
+	const WP_MIN_VER = '2.9';
+	const PHP_MIN_VER = '5.0.0';
+	const API_SCRIPT  = 'https://api.flattr.com/js/0.5.0/load.js?mode=auto';
+
+	/** @var array */
+	protected static $categories = array('text', 'images', 'audio', 'video', 'software', 'rest');
+	/** @var array */
+	protected static $languages;
+	/** @var Flattr */
+	protected static $instance;
+
+	/** @var Flattr_Settings */
+	protected $settings;
+
+	/** @var String */
+	protected $basePath;
+
+	public function __construct()
+	{	
+		if (is_admin())
+		{
+			if (!$this->compatibilityCheck())
+			{
+				return;
+			}
+			
+			$this->init();
+		}
+		if ( get_option('flattr_aut_page', 'off') == 'on' || get_option('flattr_aut', 'off') == 'on' )
+		{
+			remove_filter('get_the_excerpt', 'wp_trim_excerpt');
+			add_filter('the_content', array($this, 'injectIntoTheContent'),11);
+			add_filter('get_the_excerpt', array($this, 'filterGetExcerpt'), 1);
+		}
+
+		wp_enqueue_script('flattrscript', self::API_SCRIPT);		
+	}
+	
+	protected function addAdminNoticeMessage($msg)
+	{
+		if (!isset($this->adminNoticeMessages))
+		{
+			$this->adminNoticeMessages = array();
+			add_action( 'admin_notices', array(&$this, 'adminNotice') );
+		}
+		
+		$this->adminNoticeMessages[] = $msg;
+	}
+	
+	public function adminNotice()
+	{
+		echo '<div id="message" class="error">';
+		
+		foreach($this->adminNoticeMessages as $msg)
+		{
+			echo "<p>{$msg}</p>";
+		}
+		
+		echo '</div>';
+	}
+
+	protected function compatibilityCheck()
+	{
+		global $wp_version;
+		
+		if (version_compare(PHP_VERSION, self::PHP_MIN_VER, '<'))
+		{
+			$this->addAdminNoticeMessage('<strong>Warning:</strong> The Flattr plugin requires PHP5. You are currently using '. PHP_VERSION);
+  			add_action( 'admin_notices', array(&$this, 'adminNotice') );
+			return false;
+		}
+		
+		if (version_compare($wp_version, self::WP_MIN_VER, '<'))
+		{
+			$this->addAdminNoticeMessage('<strong>Warning:</strong> The Flattr plugin requires WordPress '. self::WP_MIN_VER .' or later. You are currently using '. $wp_version);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public function getBasePath()
+	{
+		if (!isset($this->basePath))
+		{
+			$this->basePath = WP_PLUGIN_DIR . '/' . plugin_basename( dirname(__FILE__) ) . '/';
+		}
+		
+		return $this->basePath;
+	}
+
+	public function getButton($skipOptionCheck = false)
+	{
+		global $post;
+
+		if ( ! $skipOptionCheck && ( ($post->post_type == 'page' && get_option('flattr_aut_page', 'off') != 'on') || ($post->post_type != 'page' && get_option('flattr_aut', 'off') != 'on') || is_feed() ) )
+		{
+			return '';
+		}
+
+		if (get_post_meta($post->ID, '_flattr_btn_disabled', true))
+		{
+			return '';
+		}
+
+		$selectedLanguage = get_post_meta($post->ID, '_flattr_post_language', true);
+		if (empty($selectedLanguage))
+		{
+			$selectedLanguage = get_option('flattr_lng');
+		}
+
+		$selectedCategory = get_post_meta($post->ID, '_flattr_post_category', true);
+		if (empty($selectedCategory))
+		{
+			$selectedCategory = get_option('flattr_cat');
+		}
+
+		$hidden = get_post_meta($post->ID, '_flattr_post_hidden', true);
+		if ($hidden == '')
+		{
+			$hidden = get_option('flattr_hide', false);
+		}
+
+		$buttonData = array(
+
+			'user_id'	=> get_option('flattr_uid'),
+			'url'		=> get_permalink(),
+			'compact'	=> ( get_option('flattr_compact', false) ? true : false ),
+			'hide'		=> $hidden,
+			'language'	=> $selectedLanguage,
+			'category'	=> $selectedCategory,
+			'title'		=> strip_tags(get_the_title()),
+			'body'		=> strip_tags(preg_replace('/\<br\s*\/?\>/i', "\n", $this->getExcerpt())),
+			'tag'		=> strip_tags(get_the_tag_list('', ',', ''))
+
+		);
+
+		if (isset($buttonData['user_id'], $buttonData['url'], $buttonData['language'], $buttonData['category']))
+		{
+			return $this->getButtonCode($buttonData);
+		}
+	}
+
+	protected function getButtonCode($params)
+	{
+		$rev = sprintf('flattr;uid:%s;language:%s;category:%s;',
+			$params['user_id'],
+			$params['language'],
+			$params['category']
+		);
+
+		if (!empty($params['tag']))
+		{
+			$rev .= 'tags:'. addslashes($params['tag']) .';';
+		}
+
+		if ($params['hide'])
+		{
+			$rev .= 'hidden:1;';
+		}
+
+		if ($params['compact'])
+		{
+			$rev .= 'button:compact;';
+		}
+
+		if (empty($params['body']) && !in_array($params['category'], array('images', 'video', 'audio')))
+		{
+			$params['body'] = get_bloginfo('description');
+
+			if (empty($params['body']) || strlen($params['body']) < 5)
+			{
+				$params['body'] = $params['title'];
+			}
+		}
+
+		return sprintf('<a class="FlattrButton" style="display:none;" href="%s" title="%s" rev="%s">%s</a>',
+			$params['url'],
+			addslashes($params['title']),
+			$rev,
+			$params['body']
+		);
+	}
+
+	public static function getCategories()
+	{
+		return self::$categories;
+	}
+
+	public static function filterGetExcerpt($content)
+	{
+        $excerpt_length = apply_filters('excerpt_length', 55);
+        $excerpt_more = apply_filters('excerpt_more', ' ' . '[...]');
+
+		return self::getExcerpt($excerpt_length) . $excerpt_more;
+	}
+
+	public static function getExcerpt($excerpt_max_length = 1024)
+	{
+		global $post;
+		
+		$excerpt = $post->post_excerpt;
+		if (! $excerpt)
+		{
+			$excerpt = $post->post_content;
+	    }
+
+		$excerpt = strip_shortcodes($excerpt);
+		$excerpt = strip_tags($excerpt);
+		$excerpt = str_replace(']]>', ']]&gt;', $excerpt);
+		
+		// Hacks for various plugins
+		$excerpt = preg_replace('/httpvh:\/\/[^ ]+/', '', $excerpt); // hack for smartyoutube plugin
+		$excerpt = preg_replace('%httpv%', 'http', $excerpt); // hack for youtube lyte plugin
+	
+	    // Try to shorten without breaking words
+	    if ( strlen($excerpt) > $excerpt_max_length )
+	    {
+			$pos = strpos($excerpt, ' ', $excerpt_max_length);
+			if ($pos !== false)
+			{
+				$excerpt = substr($excerpt, 0, $pos);
+			}
+		}
+
+		// If excerpt still too long
+		if (strlen($excerpt) > $excerpt_max_length)
+		{
+			$excerpt = substr($excerpt, 0, $excerpt_max_length);
+		}
+
+		return $excerpt;
+	}
+
+	public static function getInstance()
+	{
+		if (!self::$instance)
+		{
+			self::$instance = new self();
+		}
+		
+		return self::$instance;
+	}
+	
+	public static function getLanguages()
+	{
+		if (!isset(self::$languages))
+		{
+			include(Flattr::getInstance()->getBasePath() . 'languages.php');
+			self::$languages = $languages;
+		}
+		
+		return self::$languages;
+	}
+	
+	protected function init()
+	{
+		if (!$this->settings)
+		{
+			require_once($this->getBasePath() . 'settings.php');
+			$this->settings = new Flattr_Settings();
+		}
+
+		if (!$this->postMetaHandler)
+		{
+			require_once($this->getBasePath() . 'postmeta.php');
+			$this->postMetaHandler = new Flattr_PostMeta();
+		}
+	}
+
+	public function setExcerpt($content)
+	{
+		global $post;
+		return $post->post_content;
+	}
+	
+	public function injectIntoTheContent($content)
+	{
+		return $content . $this->getButton();
+	}	
 }
 
-if (get_option('flattr_aut', 'on') == 'on')
-{
-	add_filter('get_the_excerpt', create_function('$content', 'remove_filter("the_content", "flattr_the_content"); return $content;'), 9);
-	add_filter('get_the_excerpt', create_function('$content', 'add_filter("the_content", "flattr_the_content"); return $content;'), 11);
-	add_filter('the_content', 'flattr_the_content'); 
-}
+Flattr::getInstance();
 
-
-// Admin methods
-
-function flattr_admin_init()
-{
-	register_setting('flattr-settings-group', 'flattr_uid');
-	register_setting('flattr-settings-group', 'flattr_cat');
-	register_setting('flattr-settings-group', 'flattr_aut');
-}
-
-function flattr_admin_menu()
-{
-	add_options_page('Flattr', 'Flattr', 8, basename(__FILE__), 'flattr_settings_page');
-}
-
-function flattr_permalink($userID, $category, $title, $description, $tags, $url)
-{
-	$output = "<script type=\"text/javascript\">\n";
-	$output .= "var flattr_wp_ver = '" . FLATTR_WP_VERSION . "';\n";
-	$output .= "var flattr_uid = '" . flattr_safe_output($userID)      . "';\n";
-	$output .= "var flattr_cat = '" . flattr_safe_output($category)    . "';\n";
-	$output .= "var flattr_tle = '" . flattr_safe_output($title)       . "';\n";
-	$output .= "var flattr_dsc = '" . flattr_safe_output($description) . "';\n";
-	$output .= "var flattr_tag = '" . flattr_safe_output($tags)        . "';\n";
-	$output .= "var flattr_url = '" . flattr_safe_output($url)         . "';\n";
-	$output .= "</script>";
-
-	return $output . '<script src="' . FLATTR_WP_SCRIPT . '" type="text/javascript"></script>';
-}
-
-function flattr_safe_output($expression)
-{
-	return trim(preg_replace('~\r\n|\r|\n~', ' ', addslashes($expression)));
-}
-
-function flattr_settings_page()
-{
-	?>
-	<div class="wrap">
-		<h2>Flattr Settings</h2>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'flattr-settings-group' ); ?>
-			<table class="form-table">
-				<tr valign="top">
-					<th scope="row">Your Flattr user ID</th>
-					<td><input name="flattr_uid" type="text" value="<?php echo(get_option('flattr_uid')); ?>" /></td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Default category for your posts</th>
-					<td><input type="text" name="flattr_cat" value="<?php echo(get_option('flattr_cat')); ?>" /><br />(choose between text, images, audio, video, software, rest)</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row">Insert Flattr automagically</th>
-					<td><input <?php if (get_option('flattr_aut', 'on') == 'on') { echo(' checked="checked"'); } ?> type="checkbox" name="flattr_aut" value="on" /><br />(uncheck this if you rather use <code>&lt;?php the_flattr_permalink() ?&gt;</code>)</td>
-				</tr>
-			</table>
-			<p class="submit">
-				<input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
-			</p>
-		</form>
-	</div>
-	<?php
-}
-
-function flattr_the_content($content)
-{
-	$content .= get_the_flattr_permalink();
-	return $content;
-}
-
-
-// User methods
-
+/**
+ * returns the Flattr button
+ * Use this from your template
+ */
 function get_the_flattr_permalink()
 {
-	$uid = get_option('flattr_uid');
-	$cat = get_option('flattr_cat');
-
-	if (strlen($uid) && strlen($cat))
-	{
-		return flattr_permalink($uid, $cat, get_the_title(), get_the_excerpt(), strip_tags(get_the_tag_list('', ',', '')), get_permalink());
-	}
+	return Flattr::getInstance()->getButton(true);
 }
 
+/**
+ * prints the Flattr button
+ * Use this from your template
+ */
 function the_flattr_permalink()
 {
 	echo(get_the_flattr_permalink());
-}
-
-
-// Deprecated methods
-
-function FlattrDyn()
-{
-	$message = 'Deprecated function FlattrDyn() called.';
-	trigger_error($message, E_USER_NOTICE);
-	echo('<!-- ' . $message . ' -->');
-}
-
-function FlattrPerma()
-{
-	$message = 'Deprecated function FlattrPerma() called, use the_flattr_permalink() instead.';
-	trigger_error($message, E_USER_NOTICE);
-	echo('<!-- ' . $message . ' -->');
 }
