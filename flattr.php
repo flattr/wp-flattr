@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Flattr
-Plugin URI: http://flattr.com/
+Plugin URI: http://wordpress.org/extend/plugins/flattr/
 Description: Give your readers the opportunity to Flattr your effort
 Version: 0.9.15
 Author: Flattr.com
