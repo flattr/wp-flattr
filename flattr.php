@@ -3,7 +3,7 @@
 Plugin Name: Flattr
 Plugin URI: http://wordpress.org/extend/plugins/flattr/
 Description: Give your readers the opportunity to Flattr your effort
-Version: 0.9.15
+Version: 0.9.16
 Author: Flattr.com
 Author URI: http://flattr.com/
 License: This code is (un)licensed under the kopimi (copyme) non-license; http://www.kopimi.com. In other words you are free to copy it, taunt it, share it, fork it or whatever. :)
@@ -11,7 +11,7 @@ License: This code is (un)licensed under the kopimi (copyme) non-license; http:/
 
 class Flattr
 {
-	const VERSION = '0.9.15';
+	const VERSION = '0.9.16';
 	const WP_MIN_VER = '2.9';
 	const PHP_MIN_VER = '5.0.0';
 	const API_SCRIPT  = 'https://api.flattr.com/js/0.5.0/load.js?mode=auto';
