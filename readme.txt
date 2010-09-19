@@ -35,6 +35,10 @@ Note that we only support PHP 5 and WordPress 2.9 or above.
 
 == Changelog ==
 
+= 0.9.15 =
+Now applies the 'flattr_button'-filter to the Flattr button to let other plugins modify it.
+Used the 'flattr_button'-filter as a quick fix to work better with the ShareThis plugin.
+
 = 0.9.14 =
 Made it easier to connect with a Flattr account.
 Now possible to put the Flattr button before the content in posts.

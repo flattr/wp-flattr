@@ -93,6 +93,13 @@
 					<th scope="row"><?php _e('Insert Flattr button into pages automagically'); ?></th>
 					<td><input <?php if (get_option('flattr_aut_page', 'off') == 'on') { echo(' checked="checked"'); } ?> type="checkbox" name="flattr_aut_page" value="on" /><br />(uncheck this if you would rather use <code>&lt;?php the_flattr_permalink() ?&gt;</code>)</td>
 				</tr>
+
+				<?php if ( function_exists('st_add_widget') ) { ?>
+					<tr valign="top">
+						<th scope="row"><?php _e('Override ShareThis widget'); ?></th>
+						<td><input <?php if (get_option('flattr_override_sharethis', 'false') == 'true') { echo(' checked="checked"'); } ?> type="checkbox" name="flattr_override_sharethis" value="true" /><br />(will add the Flattr button after the ShareThis buttons)</td>
+					</tr>
+				<?php } ?>
 			</table>
 
 			<p class="submit">
