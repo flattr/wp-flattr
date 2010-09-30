@@ -2,7 +2,7 @@
 
 class Flattr
 {
-	const VERSION = '0.9.16';
+	const VERSION = '0.9.17';
 	const WP_MIN_VER = '2.9';
 	const API_SCRIPT  = 'https://api.flattr.com/js/0.5.0/load.js?mode=auto';
 

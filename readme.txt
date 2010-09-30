@@ -35,6 +35,9 @@ Note that we only support PHP 5 and WordPress 2.9 or above.
 
 == Changelog ==
 
+= 0.9.17 =
+Fixed PHP5 detection, will now show a message rather than throwing error on PHP4.
+
 = 0.9.16 =
 New release due to changes lost in the last release.
 
