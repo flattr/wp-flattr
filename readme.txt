@@ -2,7 +2,7 @@
 Contributors: flattr.com
 Tags: flattr, donate, micropayments
 Requires at least: 2.9.0
-Tested up to: 3.0.1
+Tested up to: 2.9.2
 Stable tag: trunk
 
 This plugin allows you to easily add a Flattr button to your wordpress blog.
@@ -34,6 +34,10 @@ Note that we only support PHP 5 and WordPress 2.9 or above.
 
 
 == Changelog ==
+
+= 0.9.18 =
+Will now use version 0.6 of the JS API.
+Will load the JS API using https only if the blog itself is using https. This should make the button load a bit faster for most of you.
 
 = 0.9.17 =
 Fixed PHP5 detection, will now show a message rather than throwing error on PHP4.

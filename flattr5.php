@@ -2,9 +2,9 @@
 
 class Flattr
 {
-	const VERSION = '0.9.17';
+	const VERSION = '0.9.18';
 	const WP_MIN_VER = '2.9';
-	const API_SCRIPT  = 'https://api.flattr.com/js/0.5.0/load.js?mode=auto';
+	const API_SCRIPT  = 'api.flattr.com/js/0.6/load.js?mode=auto';
 
 	/** @var array */
 	protected static $categories = array('text', 'images', 'audio', 'video', 'software', 'rest');
@@ -40,7 +40,7 @@ class Flattr
 			}
 		}
 
-		wp_enqueue_script('flattrscript', self::API_SCRIPT);		
+		wp_enqueue_script('flattrscript', ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https://' : 'http://' ) . self::API_SCRIPT);		
 	}
 
 	function overrideShareThis() {
