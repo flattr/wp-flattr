@@ -40,7 +40,7 @@ class Flattr
 			}
 		}
 
-		wp_enqueue_script('flattrscript', ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https://' : 'http://' ) . self::API_SCRIPT);		
+		wp_enqueue_script('flattrscript', ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https://' : 'http://' ) . self::API_SCRIPT, array(), '0.6', true);
 	}
 
 	function overrideShareThis() {
