@@ -2,7 +2,7 @@
 
 class Flattr
 {
-	const VERSION = '0.9.18';
+	const VERSION = '0.9.19';
 	const WP_MIN_VER = '2.9';
 	const API_SCRIPT  = 'api.flattr.com/js/0.6/load.js?mode=auto';
 
@@ -307,8 +307,11 @@ class Flattr
 		else {
 			$result = $content . $button;
 		}
-
-		return $result;
+		if ( ! post_password_required($post->ID) )
+		{
+			return $result;
+		}
+		return $content;
 	}	
 }
 

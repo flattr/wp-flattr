@@ -35,6 +35,9 @@ Note that we only support PHP 5 and WordPress 2.9 or above.
 
 == Changelog ==
 
+= 0.9.19 =
+Dont show Flattr button on password protected posts until the password has been accepted.
+
 = 0.9.18 =
 Will now use version 0.6 of the JS API.
 Will load the JS API using https only if the blog itself is using https. This should make the button load a bit faster for most of you.
